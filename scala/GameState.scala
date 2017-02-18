@@ -73,6 +73,10 @@ class GameState(val fields: Array[SelectState]) {
         emptyFields(randomIndex)
     }
 
+    def allFieldsSet() = {
+        getEmptyFields.isEmpty
+    }
+
     def getEmptyFields() = {
         fields.zipWithIndex
             .partition(x => (x._1 == Empty))
@@ -89,6 +93,11 @@ class Game() {
     var player: SelectState = X // X is starting
 
     def play(): Unit = {
+        if (state.allFieldsSet) {
+            println("Tie")
+            return
+        }
+
         val field = state.getRandomEmptyField()
 
         state = state.setField(field, player)
@@ -101,7 +110,7 @@ class Game() {
             return
         }
         if (state.oWinning) {
-            println("Y wins!")
+            println("O wins!")
             return
         }
 
