@@ -48,31 +48,30 @@
 
 (defn wait-or-go
   "Wait if there is an unoccupied chair or leave"
-  [customer chairs]
-  (if (< (count @chairs) 3)
-    (swap! chairs conj customer)))
+  [chairs]
+  (if (< @chairs 3)
+    (swap! chairs + 1)))
 
 (defn cut-hair
   "Get a haircut"
-  [barber customer chairs]
+  [barber chairs]
   (do
     (send barber (fn [x] { :customers-served (get x :customers-served), :cutting true }))
     (send barber (fn [x]
       (do
         (Thread/sleep 20)
         { :customers-served (+ (get x :customers-served) 1), :cutting false })))
-    (if (> (count @chairs) 0)
-      (let [next-customer (peek @chairs)]
-        (do
-          (swap! chairs pop)
-          (cut-hair barber next-customer chairs))))))
+    (if (> @chairs 0)
+      (do
+        (swap! chairs - 1)
+        (cut-hair barber chairs)))))
 
 (defn customer-arrives
   "A customer arrives."
-  [customer chairs barber]
+  [chairs barber]
   (if (is-cutting? barber)
-    (wait-or-go customer chairs)
-    (cut-hair barber customer chairs)))
+    (wait-or-go chairs)
+    (cut-hair barber chairs)))
 
 (defn create-barber
   "Create a new barber"
@@ -80,9 +79,9 @@
   (agent { :customers-served 0, :cutting false}))
 
 (defn create-chairs
-  "Create three chairs"
+  "Create counter of occupied chairs"
   []
-  (atom []))
+  (atom 0))
 
 (defn exercise-two
   "Second exercise"
@@ -91,10 +90,9 @@
       barber (create-barber)
       chairs (create-chairs)]
     (while (< (System/currentTimeMillis) (+ start-time 10000))
-      (let [customer (agent false)] ; It is not necessary for the customer to be an agent
-        (do
-          (customer-arrives customer chairs barber)
-          (Thread/sleep (+ (rand 20) 10)))))
+      (do
+        (customer-arrives chairs barber)
+        (Thread/sleep (+ (rand 20) 10))))
     (println (get @barber :customers-served))
     (shutdown-agents)))
 
