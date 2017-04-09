@@ -91,7 +91,7 @@
       barber (create-barber)
       chairs (create-chairs)]
     (while (< (System/currentTimeMillis) (+ start-time 10000))
-      (let [customer (agent false)]
+      (let [customer (agent false)] ; It is not necessary for the customer to be an agent
         (do
           (customer-arrives customer chairs barber)
           (Thread/sleep (+ (rand 20) 10)))))
